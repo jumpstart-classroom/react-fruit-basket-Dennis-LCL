@@ -1,55 +1,69 @@
 class FruitBasket extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { result: this.props.fruits };
+    this.state = { fruitsToShow: [] };
+    this.allFruits = [];
     this.filterFruits = this.filterFruits.bind(this);
   }
 
+  componentDidMount() {
+    const url =
+      "https://my-json-server.typicode.com/thoughtworks-jumpstart/api/fruits";
+
+    fetch(url)
+      .then(response => response.json())
+      .then(initialFruits => {
+        initialFruits.map(fruit => this.allFruits.push(fruit));
+        this.setState(state => ({
+          fruitsToShow: (state.fruitsToShow = initialFruits)
+        }));
+      });
+    // console.log("I'm mounted.");
+    // console.log(this.state);
+    // console.log(this.allFruits);
+  }
+
   filterFruits(event) {
-    let filterResult = this.props.fruits.filter(fruit => {
-      return fruit.includes(event.target.value);
+    let filteredFruits = this.allFruits.filter(fruit => {
+      return fruit.type.includes(event.target.value);
     });
 
-    this.setState({ result: filterResult });
+    this.setState({ fruitsToShow: filteredFruits });
   }
 
   render() {
     return (
       <React.Fragment>
-        <FruitFilter onChange={this.filterFruits} />
-        <Basket fruits={this.state.result} />;
+        <SearchBar onChange={this.filterFruits} />
+        <FilteredFruitDisplay fruitsToShow={this.state.fruitsToShow} />
       </React.Fragment>
     );
   }
 }
 
-function Basket(props) {
-  const fruitItems = props.fruits.map((fruit, index) => {
-    return <li key={index.toString()}>{fruit}</li>;
-  });
-  return <ul>{fruitItems}</ul>;
-}
-
-function FruitFilter(props) {
+function SearchBar(props) {
   return <input type="text" onChange={props.onChange} />;
 }
 
-function App1() {
-  const initialFruits = [
-    "apple",
-    "orange",
-    "banana",
-    "pear",
-    "pineapple",
-    "durian"
-  ];
-  return (
-    <React.Fragment>
-      <FruitBasket fruits={initialFruits} />>
-    </React.Fragment>
-  );
+function FilteredFruitDisplay(props) {
+  const fruitsToShow = props.fruitsToShow.map(fruit => {
+    return (
+      <li key={fruit.id.toString()}>
+        {fruit.emoji} {fruit.type}
+      </li>
+    );
+  });
+  return <ul>{fruitsToShow}</ul>;
 }
 
-const container = document.getElementById("app");
+const App1 = () => {
+  return (
+    <React.Fragment>
+      <FruitBasket />
+    </React.Fragment>
+  );
+};
+
+const container = document.querySelector("#app");
 const element = <App1 />;
 ReactDOM.render(element, container);
